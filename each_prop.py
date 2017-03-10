@@ -3,28 +3,28 @@ import unicodedata
 import re
 import urllib2
 import time
-import sys
+import os
 import random
 import dataset
 
-import sqlite3 as lite
 
 #set the delay max for the url call
 delay_for_request = 10
 
 #datebase stuff
-con = lite.connect('properties.db')
-cur = con.cursor()
-#create the table
-cur.execute("CREATE TABLE properties(street TEXT, city TEXT, state TEXT, zip INT, sq_ft INT, price INT, bedrooms INT, bathrooms INT, link text, active text)")
-
-#set all of them as not active to start
-cur.execute("UPDATE properties SET active = 'no'")
-con.commit()
-
 #set up data set db stuff, hopefully using this in the future
 db = dataset.connect('sqlite:///properties.db')
+
+#create the table if it doesnt exist
+if db.tables == []:
+    db.query("CREATE TABLE properties(street TEXT, city TEXT, state TEXT, zip INT, sq_ft INT, price INT, bedrooms INT, bathrooms INT, link text, active text)")
+
 table = db['properties']
+
+
+#set all of them as not active to start
+db.query("UPDATE properties SET active = 'no'")
+
 
 
 #this spilts the string based on seps and returns a list
@@ -36,11 +36,19 @@ def split(txt, seps):
         txt = txt.replace(sep, default_sep)
     return [i.strip() for i in txt.split(default_sep)]
 
+#make a csv of the sqlite db for uploading to Google in the future
+def make_csv():
+    result = table.all()
+    dataset.freeze(result, format='csv', filename='properties.csv')
+
 #read the active property list url to query
 with open('active_links.txt') as f:
     active_links = f.read().splitlines()
 
 for link in active_links:
+    #makes it look more human, delays a random amount
+    time.sleep(random.randint(1,delay_for_request))
+
     detail_list = []    #the details of each property
 
     #load the beautifulsoup from the url html
@@ -83,14 +91,7 @@ for link in active_links:
         print 'New Property!'
 
         #insert the property into the db
-        cur.execute('''INSERT INTO properties(street, city, state, zip, sq_ft, price, bedrooms, bathrooms, link, active)
-                   VALUES(?,?,?,?,?,?,?,?,?,?)''', (property_details['street'],property_details['city'],property_details['state'],property_details['zip'],property_details['sq_ft'],property_details['price'],property_details['bedrooms'],property_details['bathrooms'],link, 'yes'))
+        table.insert(dict(street=property_details['street'], city=property_details['city'], state=property_details['state'] , zip= property_details['zip'], sq_ft=property_details['sq_ft'], price=property_details['price'], bedrooms=property_details['bedrooms'], bathrooms=property_details['bathrooms'], link=link, active='yes'))
 
 
-        #check to see if it is already in the database
-
-        #write to the db
-        con.commit()
-
-    #makes it look more human, delays a random amount
-    time.sleep(random.randint(1,delay_for_request))
+make_csv()
