@@ -1,15 +1,18 @@
 from bs4 import BeautifulSoup
-import unicodedata
+import random
 import re
 import urllib2
 import time
 
 number_of_pages = 15
 current_page = 1
+delay_for_request = 10
+
 
 link_list = []  # create a list of all the links
 
 while current_page <= number_of_pages:
+    time.sleep(random.randint(1,delay_for_request))
     url = 'http://www.forsalebyowner.com/search/list/Indiana/fsbo-source/:150000-price/{}-page/proximity,desc-sort'.format(current_page)
     content = urllib2.urlopen(url).read()
     current_page = current_page+1
