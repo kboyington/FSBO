@@ -16,7 +16,7 @@ delay_for_request = 10
 con = lite.connect('properties.db')
 cur = con.cursor()
 #create the table
-#cur.execute("CREATE TABLE properties(street TEXT, city TEXT, state TEXT, zip INT, sq_ft INT, price INT, bedrooms INT, bathrooms INT, link text)")
+cur.execute("CREATE TABLE properties(street TEXT, city TEXT, state TEXT, zip INT, sq_ft INT, price INT, bedrooms INT, bathrooms INT, link text, active text)")
 
 #set all of them as not active to start
 cur.execute("UPDATE properties SET active = 'no'")
@@ -37,7 +37,7 @@ def split(txt, seps):
     return [i.strip() for i in txt.split(default_sep)]
 
 #read the active property list url to query
-with open('active_links_old.txt') as f:
+with open('active_links.txt') as f:
     active_links = f.read().splitlines()
 
 for link in active_links:
