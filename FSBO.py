@@ -6,7 +6,7 @@ import time
 
 number_of_pages = 15
 current_page = 1
-delay_for_request = 10
+delay_for_request = 10   #sets the max time to wait
 
 
 link_list = []  # create a list of all the links

@@ -54,7 +54,6 @@ def make_csv():
     result = table.all()
     dataset.freeze(result, format='csv', filename='properties.csv')
 
-
 #read the active property list url to query
 with open('active_links.txt') as f:
     active_links = f.read().splitlines()
@@ -92,7 +91,10 @@ for link in active_links:
     property_details = {'street': detail_list[0] , 'city': detail_list[1], 'state' : detail_list[2], 'zip' : detail_list[3], 'price': detail_list[4], 'bedrooms': detail_list[5], 'bathrooms': detail_list[6], 'sq_ft': detail_list[7] }
 
     #get the price/sqft
-    price_per_foot = (int(property_details['price'])/int(property_details['sq_ft']))
+    if int(property_details['sq_ft']) is not 0:
+        price_per_foot = (int(property_details['price'])/int(property_details['sq_ft']))
+    else:
+        price_per_foot = 0
     print price_per_foot
 
     #get the full address of the property
@@ -105,7 +107,7 @@ for link in active_links:
     if zestimate is not None:
         zest_price = zestimate.zestiamte.amount
         #dont know why but sometimes it is None, I think it is actually returned by zillow estimate as None
-        if zest_price == None:
+        if zest_price == None or zest_price == 0:
             zest_price = 0
             percentage_of_zestimate = 0
         else:
@@ -131,6 +133,5 @@ for link in active_links:
         print 'New Property!'
         #insert the property into the db
         table.insert(dict(street=property_details['street'], city=property_details['city'], state=property_details['state'] , zip= property_details['zip'], sq_ft=property_details['sq_ft'], price=property_details['price'], bedrooms=property_details['bedrooms'], bathrooms=property_details['bathrooms'], link=link, active='yes', zestimate=zest_price, percentage_of_zestimate=percentage_of_zestimate, price_per_foot=price_per_foot))
-
 
 make_csv()
